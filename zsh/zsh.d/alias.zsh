@@ -574,5 +574,8 @@ alias a='assume ai-developers --exec --'
 alias s='summon -p summon-aws-secrets'
 alias sa='assume ai-developers --exec -- summon -p summon-aws-secrets'
 
+# fix k9s rendering issue on macos
+alias k9s='RUNEWIDTH_EASTASIAN=0 k9s'
+
 
 # }}}
