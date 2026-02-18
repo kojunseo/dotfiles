@@ -5,6 +5,11 @@ set -euo pipefail
 # Install the latest summon
 # archive for the current OS/architecture.
 
+if command -v summon >/dev/null 2>&1; then
+  echo "summon already installed at: $(command -v summon)"
+  exit 0
+fi
+
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 TMPDIR="$(mktemp -d /tmp/summon.XXXXXX)"

@@ -206,12 +206,61 @@ post_actions += [  # tmux plugins
     else
         echo "$(which tmux): $(tmux -V)"
     fi
-""",
+    """,
 ]
+
+post_actions += (
+    [  # im-select (macOS)
+        r"""#!/bin/bash
+    # Install im-select to support forcing ABC input source on tmux prefix.
+    if [[ `uname` != "Darwin" ]]; then
+        echo "Skipping im-select installation on non-macOS."
+        exit 0
+    fi
+
+    if [[ -x /opt/homebrew/bin/im-select ]] || [[ -x /usr/local/bin/im-select ]] || type im-select >/dev/null 2>&1; then
+        echo -e "\033[0;32mim-select already installed.\033[0m"
+        exit 0
+    fi
+
+    if [[ "$(uname -m)" = "arm64" ]]; then
+        IM_SELECT_URL="https://raw.githubusercontent.com/daipeihust/im-select/master/macOS/out/apple/im-select"
+    else
+        IM_SELECT_URL="https://raw.githubusercontent.com/daipeihust/im-select/master/macOS/out/intel/im-select"
+    fi
+
+    IM_SELECT_DEST=""
+    for d in /opt/homebrew/bin /usr/local/bin "$HOME/.local/bin"; do
+        mkdir -p "$d" 2>/dev/null || true
+        if [[ -d "$d" && -w "$d" ]]; then
+            IM_SELECT_DEST="$d/im-select"
+            break
+        fi
+    done
+
+    if [[ -z "$IM_SELECT_DEST" ]]; then
+        echo -e "\033[0;31mCould not find a writable destination for im-select.\033[0m"
+        exit 1
+    fi
+
+    echo -e "\033[0;33mInstalling im-select -> $IM_SELECT_DEST\033[0m"
+    curl -fLsS "$IM_SELECT_URL" -o "$IM_SELECT_DEST"
+    chmod 755 "$IM_SELECT_DEST"
+    echo -e "\033[0;32m✔ Successfully installed im-select -> $IM_SELECT_DEST\033[0m"
+"""
+    ]
+    if platform.system() == "Darwin"
+    else []
+)
 
 post_actions += [  # stat_dataset
     r"""#!/bin/bash
     # Install stat_dataset tool to /usr/local/bin
+    if command -v stat_dataset >/dev/null 2>&1; then
+        echo -e "\033[0;32mstat_dataset already installed at: $(command -v stat_dataset)\033[0m"
+        exit 0
+    fi
+
     OS=$(uname)
     if [[ "$OS" == "Darwin" ]] || [[ "$OS" == "Linux" ]]; then
         STAT_DATASET_SRC="external/stat_dataset/bin/stat_dataset"
@@ -339,6 +388,24 @@ EOL
     echo -en 'user.name  : '; git config --file ~/.gitconfig.secret user.name
     echo -en 'user.email : '; git config --file ~/.gitconfig.secret user.email
     echo -en '\033[0m';
+"""
+]
+
+post_actions += [  # tmux reload
+    r"""#!/bin/bash
+    # Reload tmux config for running tmux server(s), if any.
+    if ! type tmux >/dev/null 2>&1; then
+        echo "Skipping tmux reload: tmux command not found."
+        exit 0
+    fi
+
+    if ! tmux ls >/dev/null 2>&1; then
+        echo "Skipping tmux reload: no running tmux server."
+        exit 0
+    fi
+
+    tmux source-file "$HOME/.tmux.conf"
+    echo -e "\033[0;32mReloaded tmux config: $HOME/.tmux.conf\033[0m"
 """
 ]
 

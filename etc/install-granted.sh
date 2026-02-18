@@ -5,6 +5,15 @@ set -euo pipefail
 # Install the latest granted
 # archive for the current OS/architecture.
 
+if command -v assume >/dev/null 2>&1; then
+  echo "assume already installed at: $(command -v assume)"
+  exit 0
+fi
+if command -v granted >/dev/null 2>&1; then
+  echo "granted already installed at: $(command -v granted)"
+  exit 0
+fi
+
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 TMPDIR="$(mktemp -d /tmp/granted.XXXXXX)"
