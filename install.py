@@ -88,6 +88,8 @@ tasks = {
     "~/.config/pycodestyle": "python/pycodestyle",
     "~/.ptpython/config.py": dict(action="remove"),
     "~/.config/ptpython/config.py": "python/ptpython.config.py",
+    # codex instructions
+    "~/.codex/AGENTS.md": "codex/AGENTS.md",
 }
 
 
@@ -97,6 +99,26 @@ import platform
 # Make sure the CWD is the root of dotfiles.
 __PATH__ = os.path.abspath(os.path.dirname(__file__))
 os.chdir(__PATH__)
+
+
+def _discover_codex_docs_tasks(base_source_dir="codex/docs", base_target_dir="~/.codex/docs"):
+    discovered = {}
+    source_root = os.path.join(__PATH__, base_source_dir)
+    if not os.path.isdir(source_root):
+        return discovered
+
+    for root, _, filenames in os.walk(source_root):
+        rel_root = os.path.relpath(root, source_root)
+        for filename in sorted(filenames):
+            source_relpath = os.path.join(base_source_dir, rel_root, filename)
+            target_path = os.path.join(base_target_dir, rel_root, filename)
+            source_relpath = source_relpath.replace("/./", "/")
+            target_path = target_path.replace("/./", "/")
+            discovered[target_path] = source_relpath
+    return discovered
+
+
+tasks.update(_discover_codex_docs_tasks())
 
 
 post_actions = []
@@ -474,6 +496,29 @@ def makedirs(target, mode=511, exist_ok=False):
             raise
 
 
+def is_codex_managed_target(path):
+    codex_home = os.path.expanduser("~/.codex")
+    codex_docs = os.path.join(codex_home, "docs") + os.sep
+    return path == os.path.join(codex_home, "AGENTS.md") or path.startswith(codex_docs)
+
+
+def cleanup_stale_codex_doc_symlinks():
+    source_root = os.path.realpath(os.path.join(current_dir, "codex/docs"))
+    target_root = os.path.expanduser("~/.codex/docs")
+    if not os.path.isdir(target_root):
+        return
+
+    for root, _, files in os.walk(target_root):
+        for name in files:
+            path = os.path.join(root, name)
+            if not os.path.islink(path):
+                continue
+            resolved = os.path.realpath(path)
+            if resolved.startswith(source_root + os.sep) and not os.path.exists(resolved):
+                os.unlink(path)
+                log("{:60s} : {}".format(BLUE(path), YELLOW("stale symlink removed")))
+
+
 # get current directory (absolute path)
 current_dir = os.path.abspath(os.path.dirname(__file__))
 os.chdir(current_dir)
@@ -513,6 +558,7 @@ if submodule_issues:
 
 
 log_boxed("Creating symbolic links", color_fn=CYAN)
+cleanup_stale_codex_doc_symlinks()
 for target, item in sorted(tasks.items()):
     # normalize paths
     if isinstance(item, str):
@@ -562,7 +608,9 @@ for target, item in sorted(tasks.items()):
         elif fail_on_error:
             err = RED("already exists, please remove " + target + " manually.")
         else:
-            if args.force:
+            if is_codex_managed_target(target):
+                err = RED("exists, but is not a symbolic link. Skipped (codex-managed); remove manually.")
+            elif args.force:
                 err = YELLOW("already exists but not a symbolic link; --force option ignored")
             else:
                 err = YELLOW("exists, but not a symbolic link. Check by yourself!!")

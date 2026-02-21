@@ -23,8 +23,11 @@
 - Git: `~/.gitconfig`, `~/.gitignore`
 - tmux: `~/.tmux.conf`, `~/.tmux/` 전체
 - (Neo)Vim: `~/.vimrc`, `~/.vim/`, `~/.config/nvim/`
+- Codex: `~/.codex/AGENTS.md`, `~/.codex/docs/*` (repo의 `codex/` 기준)
 - CLI 도구: `~/.local/bin/dotfiles`, `~/.local/bin/fasd`, `~/.local/bin/fzf`(실제 바이너리는 `~/.fzf/bin/fzf`)
 - 터미널 설정(SSH가 아닐 때만): `~/.config/kitty`, `~/.config/alacritty`, `~/.config/wezterm`
+
+Codex 항목의 대상 파일이 기존 일반 파일이면, 설치 시 자동 백업/덮어쓰기 없이 에러 메시지를 출력하고 해당 링크 생성을 건너뜁니다.
 
 ### 후처리에서 설치/다운로드/초기화되는 항목
 
