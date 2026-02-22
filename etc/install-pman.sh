@@ -5,6 +5,21 @@ set -euo pipefail
 # Install the latest pman binary from GitHub releases, picking the right
 # archive for the current OS/architecture.
 
+INSTALL_PMAN=1
+INSTALL_PQM=1
+if command -v pman >/dev/null 2>&1; then
+  echo "pman already installed at: $(command -v pman)"
+  INSTALL_PMAN=0
+fi
+if command -v pqm >/dev/null 2>&1; then
+  echo "pqm already installed at: $(command -v pqm)"
+  INSTALL_PQM=0
+fi
+if [[ "${INSTALL_PMAN}" -eq 0 && "${INSTALL_PQM}" -eq 0 ]]; then
+  echo "pman/pqm already installed; skipping."
+  exit 0
+fi
+
 BASE_URL="https://github.com/kojunseo/pman/releases/latest/download"
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -12,7 +27,7 @@ TMPDIR="$(mktemp -d /tmp/pman.XXXXXX)"
 cleanup() { rm -rf "$TMPDIR"; }
 trap cleanup EXIT
 
-echo "Installing pman for ${OS}/${ARCH} ..."
+echo "Installing pman/pqm for ${OS}/${ARCH} ..."
 
 case "$OS" in
   Darwin)
@@ -43,33 +58,63 @@ echo "Downloading from: ${DOWNLOAD}"
 curl -fL "${DOWNLOAD}" -o "${TMPDIR}/pman.tar.gz"
 
 tar -xvzf "${TMPDIR}/pman.tar.gz" -C "${TMPDIR}"
-if [[ ! -f "${TMPDIR}/pman" ]]; then
+if [[ "${INSTALL_PMAN}" -eq 1 && ! -f "${TMPDIR}/pman" ]]; then
   echo "pman: extracted archive did not contain the binary." >&2
   exit 1
 fi
+if [[ "${INSTALL_PQM}" -eq 1 && ! -f "${TMPDIR}/pqm" ]]; then
+  echo "pqm: extracted archive did not contain the binary; skipping pqm install."
+  INSTALL_PQM=0
+fi
 
-DEST_SYSTEM="/usr/local/bin/pman"
-DEST_USER="${HOME}/.local/bin/pman"
-mkdir -p "$(dirname "$DEST_USER")"
+BINARIES=()
+if [[ "${INSTALL_PMAN}" -eq 1 ]]; then
+  BINARIES+=(pman)
+fi
+if [[ "${INSTALL_PQM}" -eq 1 ]]; then
+  BINARIES+=(pqm)
+fi
+if [[ "${#BINARIES[@]}" -eq 0 ]]; then
+  echo "Nothing to install."
+  exit 0
+fi
 
-installed_path=""
-if [[ -w "$(dirname "$DEST_SYSTEM")" ]]; then
-  install -m 755 "${TMPDIR}/pman" "${DEST_SYSTEM}"
-  installed_path="${DEST_SYSTEM}"
+DEST_SYSTEM_DIR="/usr/local/bin"
+DEST_USER_DIR="${HOME}/.local/bin"
+mkdir -p "${DEST_USER_DIR}"
+
+install_binaries() {
+  local dest_dir="$1"
+  for bin in "${BINARIES[@]}"; do
+    install -m 755 "${TMPDIR}/${bin}" "${dest_dir}/${bin}"
+  done
+}
+
+installed_dir=""
+if [[ -w "${DEST_SYSTEM_DIR}" ]]; then
+  install_binaries "${DEST_SYSTEM_DIR}"
+  installed_dir="${DEST_SYSTEM_DIR}"
 elif command -v sudo >/dev/null 2>&1; then
-  if sudo install -m 755 "${TMPDIR}/pman" "${DEST_SYSTEM}"; then
-    installed_path="${DEST_SYSTEM}"
+  sudo_failed=""
+  for bin in "${BINARIES[@]}"; do
+    if ! sudo install -m 755 "${TMPDIR}/${bin}" "${DEST_SYSTEM_DIR}/${bin}"; then
+      sudo_failed="true"
+      break
+    fi
+  done
+  if [[ -z "${sudo_failed}" ]]; then
+    installed_dir="${DEST_SYSTEM_DIR}"
   else
     echo "pman: sudo install to /usr/local/bin failed; falling back to user install."
   fi
 else
-  echo "pman: no permission to write to /usr/local/bin; installing to ${DEST_USER}"
+  echo "pman: no permission to write to /usr/local/bin; installing to ${DEST_USER_DIR}"
 fi
 
-if [[ -z "${installed_path}" ]]; then
-  install -m 755 "${TMPDIR}/pman" "${DEST_USER}"
-  installed_path="${DEST_USER}"
+if [[ -z "${installed_dir}" ]]; then
+  install_binaries "${DEST_USER_DIR}"
+  installed_dir="${DEST_USER_DIR}"
   echo "pman installed to user bin; ensure ${HOME}/.local/bin is in PATH."
 fi
 
-echo "pman installed to: ${installed_path}"
+echo "Installed ${BINARIES[*]} to: ${installed_dir}"

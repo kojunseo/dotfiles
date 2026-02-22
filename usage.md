@@ -26,6 +26,7 @@
 - Codex: `~/.codex/AGENTS.md`, `~/.codex/docs/*` (repo의 `codex/` 기준)
 - CLI 도구: `~/.local/bin/dotfiles`, `~/.local/bin/fasd`, `~/.local/bin/fzf`(실제 바이너리는 `~/.fzf/bin/fzf`)
 - 터미널 설정(SSH가 아닐 때만): `~/.config/kitty`, `~/.config/alacritty`, `~/.config/wezterm`
+- iTerm2(macOS, SSH가 아닐 때만): `~/Library/Preferences/com.googlecode.iterm2.plist`
 
 Codex 항목의 대상 파일이 기존 일반 파일이면, 설치 시 자동 백업/덮어쓰기 없이 에러 메시지를 출력하고 해당 링크 생성을 건너뜁니다.
 
@@ -43,7 +44,8 @@ Codex 항목의 대상 파일이 기존 일반 파일이면, 설치 시 자동 �
 - `stat_dataset` 설치: `external/stat_dataset/bin/stat_dataset`를
   - 가능하면 `/usr/local/bin/stat_dataset`에 설치(sudo가 필요할 수 있음)
   - 실패 시 `~/.local/bin/stat_dataset`로 폴백
-- `pman` 설치: 최신 릴리즈 바이너리를 내려받아 `/usr/local/bin/pman` 또는 `~/.local/bin/pman`에 설치
+- `pman/pqm` 설치: 최신 릴리즈 바이너리를 내려받아 `/usr/local/bin` 또는 `~/.local/bin`에 설치
+  - 이미 설치된 바이너리는 재설치하지 않고 건너뜁니다.
 - `summon` 설치: 최신 릴리즈 바이너리를 내려받아 `summon` 설치
 - `granted` 설치: 특정 버전의 릴리즈 바이너리를 내려받아 `granted`(+ `assume`가 포함되면 같이) 설치
   - 기본: `/usr/local/bin`, 실패 시 `~/.local/bin`로 폴백
@@ -136,6 +138,8 @@ Linux에서는 아래 커맨드가 없으면 `dotfiles install ...`로 로컬 �
   - `Cmd+Enter`로 fullscreen 토글(기본 `Alt+Enter` 동작은 비활성화)
 - Alacritty: `config/alacritty/alacritty.toml`
   - macOS에서 `option_as_alt = "OnlyLeft"` (왼쪽 Option만 Alt처럼 사용)
+- iTerm2: `config/iTerm/com.googlecode.iterm2.plist`
+  - macOS에서 자동 링크 대상입니다.
 - Ghostty / Karabiner 등은 repo에 설정이 있으나 `install.py`가 자동 링크하진 않습니다.
   - Ghostty 예시: `config/ghostty/config`에서 `Ctrl+Cmd+h/j/k/l`로 split 이동
   - Karabiner 예시: `config/karabiner/README.md` 참고(수동 복사 방식)

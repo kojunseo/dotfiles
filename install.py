@@ -38,6 +38,7 @@ args = parser.parse_args()
 
 ################# BEGIN OF FIXME #################
 IS_SSH = os.getenv("SSH_TTY", None) is not None
+IS_DARWIN = os.uname().sysname == "Darwin"
 
 # Task Definition
 # (path of target symlink) : (location of source file in the repository)
@@ -74,6 +75,15 @@ tasks = {
     "~/.config/kitty": dict(src="config/kitty", cond=not IS_SSH),
     "~/.config/alacritty": dict(src="config/alacritty", cond=not IS_SSH),
     "~/.config/wezterm": dict(src="config/wezterm", cond=not IS_SSH),
+    "~/Library/Preferences/com.googlecode.iterm2.plist": dict(
+        src="config/iTerm/com.googlecode.iterm2.plist",
+        cond=(IS_DARWIN and not IS_SSH),
+        non_symlink_warning=(
+            "exists, but is not a symbolic link. iTerm2 settings were NOT modified. "
+            "Remove the existing file and run `dotfiles update` again: "
+            "`rm ~/Library/Preferences/com.googlecode.iterm2.plist`"
+        ),
+    ),
     # tmux
     "~/.tmux": "tmux",
     "~/.tmux.conf": "tmux/tmux.conf",
@@ -312,7 +322,7 @@ post_actions += [  # stat_dataset
 """,
 ]
 
-post_actions += [  # pman
+post_actions += [  # pman / pqm
     """#!/bin/bash
     bash "etc/install-pman.sh"
 """
@@ -610,6 +620,8 @@ for target, item in sorted(tasks.items()):
         else:
             if is_codex_managed_target(target):
                 err = RED("exists, but is not a symbolic link. Skipped (codex-managed); remove manually.")
+            elif item.get("non_symlink_warning"):
+                err = RED(item["non_symlink_warning"])
             elif args.force:
                 err = YELLOW("already exists but not a symbolic link; --force option ignored")
             else:
