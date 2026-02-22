@@ -38,7 +38,6 @@ args = parser.parse_args()
 
 ################# BEGIN OF FIXME #################
 IS_SSH = os.getenv("SSH_TTY", None) is not None
-IS_DARWIN = os.uname().sysname == "Darwin"
 
 # Task Definition
 # (path of target symlink) : (location of source file in the repository)
@@ -75,15 +74,6 @@ tasks = {
     "~/.config/kitty": dict(src="config/kitty", cond=not IS_SSH),
     "~/.config/alacritty": dict(src="config/alacritty", cond=not IS_SSH),
     "~/.config/wezterm": dict(src="config/wezterm", cond=not IS_SSH),
-    "~/Library/Preferences/com.googlecode.iterm2.plist": dict(
-        src="config/iTerm/com.googlecode.iterm2.plist",
-        cond=(IS_DARWIN and not IS_SSH),
-        non_symlink_warning=(
-            "exists, but is not a symbolic link. iTerm2 settings were NOT modified. "
-            "Remove the existing file and run `dotfiles update` again: "
-            "`rm ~/Library/Preferences/com.googlecode.iterm2.plist`"
-        ),
-    ),
     # tmux
     "~/.tmux": "tmux",
     "~/.tmux.conf": "tmux/tmux.conf",
@@ -105,6 +95,7 @@ tasks = {
 
 import os
 import platform
+import shutil
 
 # Make sure the CWD is the root of dotfiles.
 __PATH__ = os.path.abspath(os.path.dirname(__file__))
@@ -529,6 +520,49 @@ def cleanup_stale_codex_doc_symlinks():
                 log("{:60s} : {}".format(BLUE(path), YELLOW("stale symlink removed")))
 
 
+def _make_timestamped_backup_path(target_path):
+    import datetime
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    backup_path = "{}.bak.{}".format(target_path, timestamp)
+
+    i = 1
+    while os.path.lexists(backup_path):
+        backup_path = "{}.bak.{}.{}".format(target_path, timestamp, i)
+        i += 1
+    return backup_path
+
+
+def install_iterm2_preferences_copy_mode():
+    if platform.system() != "Darwin" or IS_SSH:
+        return 0
+
+    source = os.path.join(current_dir, "config/iTerm/com.googlecode.iterm2.plist")
+    target = os.path.expanduser("~/Library/Preferences/com.googlecode.iterm2.plist")
+
+    if not os.path.isfile(source):
+        log("{:60s} : {}".format(BLUE(target), RED("source plist not found: {}".format(source))))
+        return 1
+
+    target_dir = os.path.dirname(target)
+    if not os.path.isdir(target_dir):
+        makedirs(target_dir, exist_ok=True)
+        log(GREEN("Created directory : %s" % target_dir))
+
+    try:
+        if os.path.lexists(target):
+            backup = _make_timestamped_backup_path(target)
+            shutil.move(target, backup)
+            log("{:60s} : {}".format(BLUE(backup), GREEN("backup created")))
+
+        shutil.copy2(source, target)
+        log("{:60s} : {}".format(BLUE(target), GREEN("copied from '{}'".format(source))))
+        return 0
+    except Exception as ex:
+        log("{:60s} : {}".format(BLUE(target), RED("failed to copy iTerm2 preferences: {}".format(ex))))
+        return 1
+
+
 # get current directory (absolute path)
 current_dir = os.path.abspath(os.path.dirname(__file__))
 os.chdir(current_dir)
@@ -641,6 +675,14 @@ for target, item in sorted(tasks.items()):
         log("{:60s} : {}".format(BLUE(target), GREEN("symlink created from '%s'" % source)))
 
 errors = []
+if platform.system() == "Darwin" and not IS_SSH:
+    action_title = "Apply iTerm2 preferences (backup + copy)"
+    log("\n", cr=False)
+    log_boxed("Executing: " + action_title, color_fn=CYAN)
+    ret = install_iterm2_preferences_copy_mode()
+    if ret:
+        errors.append(action_title)
+
 for action in post_actions:
     if not action:
         continue

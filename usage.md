@@ -26,7 +26,6 @@
 - Codex: `~/.codex/AGENTS.md`, `~/.codex/docs/*` (repo의 `codex/` 기준)
 - CLI 도구: `~/.local/bin/dotfiles`, `~/.local/bin/fasd`, `~/.local/bin/fzf`(실제 바이너리는 `~/.fzf/bin/fzf`)
 - 터미널 설정(SSH가 아닐 때만): `~/.config/kitty`, `~/.config/alacritty`, `~/.config/wezterm`
-- iTerm2(macOS, SSH가 아닐 때만): `~/Library/Preferences/com.googlecode.iterm2.plist`
 
 Codex 항목의 대상 파일이 기존 일반 파일이면, 설치 시 자동 백업/덮어쓰기 없이 에러 메시지를 출력하고 해당 링크 생성을 건너뜁니다.
 
@@ -38,6 +37,9 @@ Codex 항목의 대상 파일이 기존 일반 파일이면, 설치 시 자동 �
 - `fzf` 설치: `~/.fzf`를 클론/업데이트 후 `~/.fzf/install --all --no-update-rc`
   - `~/.local/bin/fzf`는 `~/.fzf/bin/fzf`로 링크됩니다.
 - `video2gif` 설치: `~/.local/bin/video2gif`를 다운로드 후 실행 권한 부여
+- iTerm2 plist 적용(macOS + non-SSH): `config/iTerm/com.googlecode.iterm2.plist`를
+  - 기존 `~/Library/Preferences/com.googlecode.iterm2.plist` 백업(`.bak.<timestamp>`) 후
+  - `~/Library/Preferences/com.googlecode.iterm2.plist`로 복사 적용
 - Zsh 플러그인 갱신: `antidote update/reset` 실행(캐시 스크립트 생성 포함)
 - tmux 플러그인 설치: TPM(`~/.tmux/plugins/tpm`)을 통해 플러그인 설치 수행
   - tmux 버전 체크(권장: `>= 2.3`), Linux에서 tmux 미설치 시 `dotfiles install tmux`로 로컬 설치를 시도할 수 있음
@@ -139,7 +141,7 @@ Linux에서는 아래 커맨드가 없으면 `dotfiles install ...`로 로컬 �
 - Alacritty: `config/alacritty/alacritty.toml`
   - macOS에서 `option_as_alt = "OnlyLeft"` (왼쪽 Option만 Alt처럼 사용)
 - iTerm2: `config/iTerm/com.googlecode.iterm2.plist`
-  - macOS에서 자동 링크 대상입니다.
+  - macOS에서 자동 백업 후 복사 적용됩니다(심볼릭 링크 사용 안 함).
 - Ghostty / Karabiner 등은 repo에 설정이 있으나 `install.py`가 자동 링크하진 않습니다.
   - Ghostty 예시: `config/ghostty/config`에서 `Ctrl+Cmd+h/j/k/l`로 split 이동
   - Karabiner 예시: `config/karabiner/README.md` 참고(수동 복사 방식)

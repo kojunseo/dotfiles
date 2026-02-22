@@ -1,16 +1,20 @@
 ## How to use iTerm Config
 * This is my custom iTerm Setup Configs about color Theme, mouse option, key options and many others.
 * Only **MacOS** support (becuase iTerm2 support macos only).
-* `dotfiles update` (or `python install.py`) will try to symlink this file automatically on macOS.
+* `dotfiles update` (`python install.py`) on macOS applies this plist automatically.
 
-### Conflict policy
-If `~/Library/Preferences/com.googlecode.iterm2.plist` already exists as a regular file
-(not a symlink), installer **does not overwrite** it.
+### Install/Update behavior
+When `dotfiles update` runs on macOS:
+1. Existing `~/Library/Preferences/com.googlecode.iterm2.plist` is moved to a backup:
+   - `~/Library/Preferences/com.googlecode.iterm2.plist.bak.YYYYmmddHHMMSS`
+2. Repo plist is copied to:
+   - `~/Library/Preferences/com.googlecode.iterm2.plist`
 
-You will see a warning like:
+No symlink is used for iTerm plist.
+
+### Sync current local settings into repo source
+If you changed iTerm locally and want future `dotfiles update` to apply it:
 
 ```bash
-exists, but is not a symbolic link. iTerm2 settings were NOT modified.
-Remove the existing file and run `dotfiles update` again:
-`rm ~/Library/Preferences/com.googlecode.iterm2.plist`
+cp ~/Library/Preferences/com.googlecode.iterm2.plist ~/.dotfiles/config/iTerm/com.googlecode.iterm2.plist
 ```
