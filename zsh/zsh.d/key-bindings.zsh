@@ -32,6 +32,13 @@ bindkey '^B' backward-word
 bindkey '^[[1;3C' forward-word
 bindkey '^[[1;3D' backward-word
 
+# Make Option+Backspace behave like macOS "delete previous word".
+# Different terminals emit either ESC+DEL or ESC+BS for this key.
+bindkey -M viins '^[^?' vi-backward-kill-word
+bindkey -M viins '^[^H' vi-backward-kill-word
+bindkey -M emacs '^[^?' backward-kill-word
+bindkey -M emacs '^[^H' backward-kill-word
+
 if [[ $(bindkey '^R') == *"undefined"* ]]; then
   bindkey '^R' history-incremental-search-backward
 fi
