@@ -104,8 +104,12 @@ require("lazy").setup(PLUGIN_SPEC, {
       },
     },
   },
+  checker = {
+    enabled = false,
+    notify = false,
+  },
   change_detection = {
-    notify = true,
+    notify = false,
   },
 })
 
