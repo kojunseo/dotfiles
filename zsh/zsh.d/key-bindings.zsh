@@ -1,7 +1,5 @@
 # Custom key bindings for ZSH
 
-# In default settings, we use 'vi-mode' (bindkey -v)
-
 # Bash-compatible (emacs style) key bindings
 # ==========================================
 # @see http://zsh.sourceforge.net/Doc/Release/Zsh-Line-Editor.html
@@ -34,8 +32,6 @@ bindkey '^[[1;3D' backward-word
 
 # Make Option+Backspace behave like macOS "delete previous word".
 # Different terminals emit either ESC+DEL or ESC+BS for this key.
-bindkey -M viins '^[^?' vi-backward-kill-word
-bindkey -M viins '^[^H' vi-backward-kill-word
 bindkey -M emacs '^[^?' backward-kill-word
 bindkey -M emacs '^[^H' backward-kill-word
 
@@ -60,13 +56,8 @@ bindkey '^[[B' history-substring-search-down    # Down arrow
 bindkey '^[OA' history-substring-search-up      # Up arrow (alternative)
 bindkey '^[OB' history-substring-search-down    # Down arrow (alternative)
 
-# Vi mode에서도 작동하도록 설정
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
-
-# Vi mode key bindings
-# CTRL-X CTRL-E: Edit command in an external editor (even in insert mode)
-bindkey -M viins "$key_info[Control]X$key_info[Control]E" edit-command-line
+# CTRL-X CTRL-E: Edit command in an external editor
+bindkey -M emacs "$key_info[Control]X$key_info[Control]E" edit-command-line
 
 # Note: see ~/.zsh/zsh.d/fzf-widgets.zsh
 # for more zsh widgets and their keybindings.
