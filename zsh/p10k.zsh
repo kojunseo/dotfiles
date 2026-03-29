@@ -837,11 +837,12 @@
   # Default context color (no privileges, no SSH).
   typeset -g POWERLEVEL9K_CONTEXT_FOREGROUND=180
 
-  local CONTEXT_TEMPLATE="%B%F{yellow}%n%f%b%F{242}@%B%F{${PROMPT_HOST_COLOR:-cyan}}%m%f%b"
+  local CONTEXT_TEMPLATE="%B%F{110}[LOCAL]%f%b %B%F{yellow}%n%f%b%F{242}@%B%F{${PROMPT_HOST_COLOR:-cyan}}%m%f%b"
+  local REMOTE_CONTEXT_TEMPLATE="%B%F{208}[SSH]%f%b %B%F{yellow}%n%f%b%F{242}@%B%F{${PROMPT_HOST_COLOR:-cyan}}%m%f%b"
   # Context format when running with privileges: bold user@hostname.
   typeset -g POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE='%B%n@%m'
   # [@] Context format when in SSH without privileges: user@hostname.
-  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_TEMPLATE=${CONTEXT_TEMPLATE}
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_TEMPLATE=${REMOTE_CONTEXT_TEMPLATE}
   # [@] Default context format (no privileges, no SSH): user@hostname.
   typeset -g POWERLEVEL9K_CONTEXT_TEMPLATE=${CONTEXT_TEMPLATE}
 
