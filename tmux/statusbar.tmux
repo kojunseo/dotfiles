@@ -9,6 +9,8 @@ cwd="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 main() {
   tmux set-hook -g client-resized "run-shell '~/.tmux/statusbar.tmux'"
+  tmux set-hook -g client-session-changed "run-shell -b '~/.tmux/statusbar.tmux update-client-ssh #{client_pid}'"
+  update-client-ssh
 
   # Left status: background color w.r.t per-host prompt color
   if [[ -z "$PROMPT_HOST_COLOR" ]]; then
@@ -34,7 +36,7 @@ main() {
   fi
 
   tmux set -g status-right-length $STATUS_RIGHT_LENGTH
-  tmux set-hook -g client-attached "set -g status-right-length 1; run-shell 'sleep 1.1'; set -g status-right-length $STATUS_RIGHT_LENGTH;"
+  tmux set-hook -g client-attached "run-shell -b '~/.tmux/statusbar.tmux update-client-ssh #{client_pid}'; set -g status-right-length 1; run-shell 'sleep 1.1'; set -g status-right-length $STATUS_RIGHT_LENGTH;"
 
   # [right status] prefix, datetime, etc.
   tmux set -g status-right "\
@@ -75,6 +77,57 @@ main() {
 #{?pane_synchronized,#[fg=#d7ff00] (SYNC),} \
 #[fg=#0087af,bg=#1c1c1c,nobold,nounderscore,noitalics]\
 ";
+}
+
+client-pid-has-ssh-env() {
+  local client_pid="$1"
+
+  [[ "$client_pid" =~ ^[0-9]+$ ]] || return 2
+
+  if [[ -r "/proc/$client_pid/environ" ]]; then
+    if tr '\0' '\n' < "/proc/$client_pid/environ" 2>/dev/null |
+       grep -Eq '^SSH_(CONNECTION|CLIENT|TTY)='; then
+      return 0
+    fi
+    return 1
+  fi
+
+  local ps_output
+  ps_output="$(ps eww -p "$client_pid" 2>/dev/null)" || return 2
+  if [[ -n "$ps_output" ]]; then
+    if printf '%s\n' "$ps_output" |
+       grep -Eq '(^|[[:space:]])SSH_(CONNECTION|CLIENT|TTY)='; then
+      return 0
+    fi
+    if printf '%s\n' "$ps_output" |
+       grep -Eq '(^|[[:space:]])[A-Za-z_][A-Za-z0-9_]*='; then
+      return 1
+    fi
+  fi
+
+  return 2
+}
+
+update-client-ssh() {
+  local client_pid="${1:-}"
+  local is_ssh=0
+
+  if [[ -z "$client_pid" ]]; then
+    client_pid="$(tmux display-message -p '#{client_pid}' 2>/dev/null || true)"
+  fi
+
+  if client-pid-has-ssh-env "$client_pid"; then
+    is_ssh=1
+  elif [[ $? -eq 2 ]]; then
+    # Fallback: tmux updates these variables from the attaching client via update-environment.
+    if tmux show-environment -q SSH_CONNECTION >/dev/null 2>&1 ||
+       tmux show-environment -q SSH_CLIENT >/dev/null 2>&1 ||
+       tmux show-environment -q SSH_TTY >/dev/null 2>&1; then
+      is_ssh=1
+    fi
+  fi
+
+  tmux set-option -gq @dotfiles_client_ssh "$is_ssh"
 }
 
 cpu-usage() {
