@@ -171,19 +171,18 @@ GIT_VERSION=$(git --version | awk '{print $3}')
 
 alias github='\gh'
 
-function ghn() {
+function ghi() {
     # git history, but truncate w.r.t the terminal size. Assumes not headless.
     # A few lines to subtract from the height: previous prompt (2) + blank (1) + current prompt (2)
     local num_lines=$(($(stty size | cut -d" " -f1) - 5))
     if [[ $num_lines -gt 25 ]]; then num_lines=$((num_lines - 5)); fi  # more margin
     git history --color=always -n$num_lines "$@" | head -n$num_lines | less --QUIT-AT-EOF -F
 }
-alias gh='ghn'
-alias ghA='gh --all'
+alias ghA='ghi --all'
 if _version_check $GIT_VERSION "2.0"; then
-  alias gha='gh --exclude=refs/stash --all'
+  alias gha='ghi --exclude=refs/stash --all'
 else
-  alias gha='gh --all'   # git < 1.9 has no --exclude option
+  alias gha='ghi --all'   # git < 1.9 has no --exclude option
 fi
 function ghb() {
   local branch="HEAD"

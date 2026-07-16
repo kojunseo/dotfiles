@@ -111,7 +111,8 @@ Linux에서는 아래 커맨드가 없으면 `dotfiles install ...`로 로컬 �
   - `gd`: `git diff --no-prefix`
   - `gdns`: `git diff name-status`
   - `gu`: `git pull --autostash`
-  - `gh`: `git history` 상단만 출력
+  - `ghi`: `git history` 상단만 출력
+  - `gh`: GitHub CLI (dotfiles 설치 시 기본 설치)
 
 ### auth (AWS 등)
 

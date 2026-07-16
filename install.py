@@ -171,6 +171,25 @@ post_actions += [  # fzf
 """
 ]
 
+post_actions += [  # GitHub CLI
+    r"""#!/bin/bash
+    if command -v gh >/dev/null 2>&1; then
+        echo "GitHub CLI already installed: $(gh --version | head -n1)"
+        exit 0
+    fi
+
+    if [[ "$(uname)" == "Darwin" ]]; then
+        if ! command -v brew >/dev/null 2>&1; then
+            echo "Homebrew is required to install GitHub CLI on macOS." >&2
+            exit 1
+        fi
+        brew install gh
+    else
+        bin/dotfiles install gh
+    fi
+"""
+]
+
 post_actions += [  # video2gif
     """#!/bin/bash
     # Download command line scripts
