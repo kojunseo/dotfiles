@@ -1,0 +1,48 @@
+# Herdr configuration: keep the tmux muscle memory from tmux/tmux.conf.
+onboarding = false
+
+[terminal]
+new_cwd = "follow"
+
+[keys]
+prefix = "ctrl+a"
+
+# Workspace navigation. `n` is intentionally freed from next-tab behavior.
+new_workspace = "prefix+n"
+workspace_picker = "prefix+w"
+
+# Tabs correspond to tmux windows: create with `c`, switch by number.
+new_tab = "prefix+c"
+switch_tab = "prefix+1..9"
+next_tab = ""
+previous_tab = ""
+rename_tab = "prefix+shift+a"
+
+# Panes: both arrow keys and vim directions work after the prefix.
+focus_pane_left = ["prefix+left", "prefix+h"]
+focus_pane_down = ["prefix+down", "prefix+j"]
+focus_pane_up = ["prefix+up", "prefix+k"]
+focus_pane_right = ["prefix+right", "prefix+l"]
+split_vertical = "prefix+v"
+split_horizontal = ["prefix+s", "prefix+minus"]
+rename_pane = "prefix+t"
+
+# Preserve tmux-like lifecycle, copy-mode, and config controls.
+detach = "prefix+d"
+copy_mode = ["prefix+enter", "prefix+esc", "prefix+["]
+reload_config = "prefix+r"
+resize_mode = "prefix+shift+r"
+
+# `prefix+s` is used for a horizontal split, so move settings out of the way.
+settings = "prefix+shift+s"
+
+[ui]
+# Match tmux's immediate `new-window` behavior.
+prompt_new_tab_name = false
+
+[ui.toast]
+delivery = "system"
+
+[experimental]
+# Match the tmux prefix hook that switches macOS input to an ASCII layout.
+switch_ascii_input_source_in_prefix = true

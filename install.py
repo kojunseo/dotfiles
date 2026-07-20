@@ -77,6 +77,8 @@ tasks = {
     # tmux
     "~/.tmux": "tmux",
     "~/.tmux.conf": "tmux/tmux.conf",
+    # herdr
+    "~/.config/herdr/config.toml": "config/herdr/config.toml",
     # .config (XDG-style)
     "~/.config/terminator": "config/terminator",
     "~/.config/pudb/pudb.cfg": "config/pudb/pudb.cfg",
@@ -186,6 +188,44 @@ post_actions += [  # GitHub CLI
         brew install gh
     else
         bin/dotfiles install gh
+    fi
+"""
+]
+
+post_actions += [  # Herdr
+    r"""#!/bin/bash
+    # Install Herdr on Linux/macOS using the official stable installer.
+    HERDR_BIN="$(command -v herdr || true)"
+    if [[ -z "$HERDR_BIN" && -x "$HOME/.local/bin/herdr" ]]; then
+        HERDR_BIN="$HOME/.local/bin/herdr"
+    fi
+
+    if [[ -n "$HERDR_BIN" ]]; then
+        echo "Herdr already installed: $($HERDR_BIN --version)"
+    else
+        if [[ "$(uname)" != "Darwin" && "$(uname)" != "Linux" ]]; then
+            echo "Skipping Herdr installation: unsupported platform $(uname)."
+            exit 0
+        fi
+
+        curl -fsSL https://herdr.dev/install.sh | sh
+
+        HERDR_BIN="$(command -v herdr || true)"
+        if [[ -z "$HERDR_BIN" && -x "$HOME/.local/bin/herdr" ]]; then
+            HERDR_BIN="$HOME/.local/bin/herdr"
+        fi
+    fi
+    if [[ -z "$HERDR_BIN" ]]; then
+        echo "Herdr installation completed, but the binary was not found on PATH or in ~/.local/bin." >&2
+        exit 1
+    fi
+
+    "$HERDR_BIN" --version
+    "$HERDR_BIN" config check
+
+    if "$HERDR_BIN" status server >/dev/null 2>&1; then
+        "$HERDR_BIN" server reload-config
+        echo "Reloaded Herdr config: $HOME/.config/herdr/config.toml"
     fi
 """
 ]
