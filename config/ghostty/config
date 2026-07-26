@@ -52,6 +52,36 @@ selection-invert-fg-bg = true
 
 macos-option-as-alt = left
 
+# Use physical QWERTY positions for Ctrl chords. This keeps shortcuts working
+# while a non-Latin input source is active, even when the child enables the
+# Kitty keyboard protocol.
+keybind = ctrl+KeyA=text:\x01
+keybind = ctrl+KeyB=text:\x02
+keybind = ctrl+KeyC=text:\x03
+keybind = ctrl+KeyD=text:\x04
+keybind = ctrl+KeyE=text:\x05
+keybind = ctrl+KeyF=text:\x06
+keybind = ctrl+KeyG=text:\x07
+keybind = ctrl+KeyH=text:\x08
+keybind = ctrl+KeyI=text:\x09
+keybind = ctrl+KeyJ=text:\x0a
+keybind = ctrl+KeyK=text:\x0b
+keybind = ctrl+KeyL=text:\x0c
+keybind = ctrl+KeyM=text:\x0d
+keybind = ctrl+KeyN=text:\x0e
+keybind = ctrl+KeyO=text:\x0f
+keybind = ctrl+KeyP=text:\x10
+keybind = ctrl+KeyQ=text:\x11
+keybind = ctrl+KeyR=text:\x12
+keybind = ctrl+KeyS=text:\x13
+keybind = ctrl+KeyT=text:\x14
+keybind = ctrl+KeyU=text:\x15
+keybind = ctrl+KeyV=text:\x16
+keybind = ctrl+KeyW=text:\x17
+keybind = ctrl+KeyX=text:\x18
+keybind = ctrl+KeyY=text:\x19
+keybind = ctrl+KeyZ=text:\x1a
+
 # Make Option+Backspace send Meta-Backspace (ESC + DEL) for TUI apps.
 keybind = alt+backspace=text:\x1b\x7f
 
@@ -65,6 +95,9 @@ keybind = unconsumed:ctrl+cmd+l=goto_split:right
 ####################################################################################################
 # Etc.
 ####################################################################################################
+
+# On macOS, hold Command while hovering/clicking a detected URL or file path.
+link-url = true
 
 macos-non-native-fullscreen = visible-menu
 

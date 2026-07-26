@@ -36,6 +36,10 @@ Codex 항목의 대상 파일이 기존 일반 파일이면, 설치 시 자동 �
 - `pyenv` 클론: `~/.pyenv` (`git clone https://github.com/pyenv/pyenv.git ~/.pyenv`)
 - `fzf` 설치: `~/.fzf`를 클론/업데이트 후 `~/.fzf/install --all --no-update-rc`
   - `~/.local/bin/fzf`는 `~/.fzf/bin/fzf`로 링크됩니다.
+- `herdr` 설치:
+  - 공식 stable 버전을 `~/.local/bin/herdr`에 설치합니다.
+  - `smarzban/herdr-file-viewer` 플러그인을 고정된 commit으로 설치·활성화합니다.
+  - 설치된 버전이 지원하면 `~/.config/herdr/config.toml`을 검사하고, 실행 중인 server가 있으면 중단 없이 config를 reload합니다.
 - `video2gif` 설치: `~/.local/bin/video2gif`를 다운로드 후 실행 권한 부여
 - iTerm2 plist 적용(macOS + non-SSH): `config/iTerm/com.googlecode.iterm2.plist`를
   - 기존 `~/Library/Preferences/com.googlecode.iterm2.plist` 백업(`.bak.<timestamp>`) 후
@@ -94,6 +98,16 @@ Linux에서는 아래 커맨드가 없으면 `dotfiles install ...`로 로컬 �
   - `prefix + p`: 시스템 클립보드(`pbpaste`) → tmux buffer로 로드 후 paste
 - 탈출: `exit`
 
+### herdr
+
+설정 파일: `config/herdr/config.toml` → `~/.config/herdr/config.toml`
+
+- Prefix: `Ctrl+a`
+- `prefix + f`: `herdr-file-viewer`를 현재 작업 옆 split pane으로 엽니다.
+- `prefix + r`: config를 reload합니다.
+- iTerm2에서는 설치 시 앱의 enhanced key reporting을 비활성화해 한글 입력 상태에서도 `Ctrl+a`, `Ctrl+c` 등이 동작하게 합니다.
+- Ghostty에서는 물리 QWERTY 위치의 Ctrl 조합을 legacy control byte로 전달합니다.
+
 ### git
 
 설정 파일: `git/gitconfig` → `~/.gitconfig`, Zsh 별칭은 `zsh/zsh.d/alias.zsh`
@@ -144,9 +158,11 @@ Linux에서는 아래 커맨드가 없으면 `dotfiles install ...`로 로컬 �
   - macOS에서 `option_as_alt = "OnlyLeft"` (왼쪽 Option만 Alt처럼 사용)
 - iTerm2: `config/iTerm/com.googlecode.iterm2.plist`
   - macOS에서 자동 백업 후 복사 적용됩니다(심볼릭 링크 사용 안 함).
-- Ghostty / Karabiner 등은 repo에 설정이 있으나 `install.py`가 자동 링크하진 않습니다.
-  - Ghostty 예시: `config/ghostty/config`에서 `Ctrl+Cmd+h/j/k/l`로 split 이동
-  - Karabiner 예시: `config/karabiner/README.md` 참고(수동 복사 방식)
+- Ghostty: `config/ghostty` → `~/.config/ghostty`
+  - 한글 입력 상태에서도 물리 QWERTY 위치의 `Ctrl+a`~`Ctrl+z`가 동작합니다.
+  - macOS에서 `Cmd`를 누른 채 URL 또는 파일 경로를 클릭하면 기본 앱으로 엽니다.
+  - `Ctrl+Cmd+h/j/k/l`로 split을 이동합니다.
+- Karabiner 설정은 `config/karabiner/README.md`를 참고해 수동으로 복사합니다.
 
 ### (Neo)Vim
 

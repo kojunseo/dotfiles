@@ -36,6 +36,12 @@ resize_mode = "prefix+shift+r"
 # `prefix+s` is used for a horizontal split, so move settings out of the way.
 settings = "prefix+shift+s"
 
+[[keys.command]]
+key = "prefix+f"
+type = "plugin_action"
+command = "herdr-file-viewer.open-file-viewer"
+description = "Open file viewer"
+
 [ui]
 # Match tmux's immediate `new-window` behavior.
 prompt_new_tab_name = false

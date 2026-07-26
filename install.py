@@ -22,6 +22,7 @@ print(__doc__)  # print logo.
 
 import argparse
 import os
+import plistlib
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -70,10 +71,11 @@ tasks = {
     "~/.Xmodmap": "Xmodmap",
     # GTK
     "~/.gtkrc-2.0": "gtkrc-2.0",
-    # terminal emulators (kitty, alacritty, wezterm)
+    # terminal emulators (kitty, alacritty, wezterm, ghostty)
     "~/.config/kitty": dict(src="config/kitty", cond=not IS_SSH),
     "~/.config/alacritty": dict(src="config/alacritty", cond=not IS_SSH),
     "~/.config/wezterm": dict(src="config/wezterm", cond=not IS_SSH),
+    "~/.config/ghostty": dict(src="config/ghostty", cond=not IS_SSH),
     # tmux
     "~/.tmux": "tmux",
     "~/.tmux.conf": "tmux/tmux.conf",
@@ -193,41 +195,7 @@ post_actions += [  # GitHub CLI
 ]
 
 post_actions += [  # Herdr
-    r"""#!/bin/bash
-    # Install Herdr on Linux/macOS using the official stable installer.
-    HERDR_BIN="$(command -v herdr || true)"
-    if [[ -z "$HERDR_BIN" && -x "$HOME/.local/bin/herdr" ]]; then
-        HERDR_BIN="$HOME/.local/bin/herdr"
-    fi
-
-    if [[ -n "$HERDR_BIN" ]]; then
-        echo "Herdr already installed: $($HERDR_BIN --version)"
-    else
-        if [[ "$(uname)" != "Darwin" && "$(uname)" != "Linux" ]]; then
-            echo "Skipping Herdr installation: unsupported platform $(uname)."
-            exit 0
-        fi
-
-        curl -fsSL https://herdr.dev/install.sh | sh
-
-        HERDR_BIN="$(command -v herdr || true)"
-        if [[ -z "$HERDR_BIN" && -x "$HOME/.local/bin/herdr" ]]; then
-            HERDR_BIN="$HOME/.local/bin/herdr"
-        fi
-    fi
-    if [[ -z "$HERDR_BIN" ]]; then
-        echo "Herdr installation completed, but the binary was not found on PATH or in ~/.local/bin." >&2
-        exit 1
-    fi
-
-    "$HERDR_BIN" --version
-    "$HERDR_BIN" config check
-
-    if "$HERDR_BIN" status server >/dev/null 2>&1; then
-        "$HERDR_BIN" server reload-config
-        echo "Reloaded Herdr config: $HOME/.config/herdr/config.toml"
-    fi
-"""
+    "etc/install-herdr.sh",
 ]
 
 post_actions += [  # video2gif
@@ -609,13 +577,33 @@ def install_iterm2_preferences_copy_mode():
         log(GREEN("Created directory : %s" % target_dir))
 
     try:
+        with open(source, "rb") as source_file:
+            preferences = plistlib.load(source_file)
+        profiles = preferences.get("New Bookmarks")
+        if not isinstance(profiles, list) or not profiles:
+            raise ValueError("iTerm2 plist has no profiles in 'New Bookmarks'")
+        for profile in profiles:
+            if not isinstance(profile, dict):
+                raise ValueError("iTerm2 plist contains an invalid profile")
+            # Prevent terminal applications from enabling enhanced key reporting.
+            # It causes Ctrl chords to use Hangul codepoints instead of the
+            # physical QWERTY key while a Korean input source is active.
+            profile["Allow modifyOtherKeys"] = False
+
         if os.path.lexists(target):
             backup = _make_timestamped_backup_path(target)
             shutil.move(target, backup)
             log("{:60s} : {}".format(BLUE(backup), GREEN("backup created")))
 
-        shutil.copy2(source, target)
-        log("{:60s} : {}".format(BLUE(target), GREEN("copied from '{}'".format(source))))
+        with open(target, "wb") as target_file:
+            plistlib.dump(preferences, target_file, fmt=plistlib.FMT_BINARY, sort_keys=False)
+        shutil.copymode(source, target)
+        log(
+            "{:60s} : {}".format(
+                BLUE(target),
+                GREEN("copied from '{}' with enhanced key reporting disabled".format(source)),
+            )
+        )
         return 0
     except Exception as ex:
         log("{:60s} : {}".format(BLUE(target), RED("failed to copy iTerm2 preferences: {}".format(ex))))
