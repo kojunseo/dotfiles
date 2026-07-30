@@ -198,6 +198,19 @@ post_actions += [  # Herdr
     "etc/install-herdr.sh",
 ]
 
+post_actions += [  # Leaf
+    r"""#!/bin/bash
+    # Install Leaf
+    if command -v leaf >/dev/null 2>&1 || [[ -x "$HOME/.local/bin/leaf" ]]; then
+        echo "Leaf already installed."
+        exit 0
+    fi
+
+    set -o pipefail
+    curl -fsSL https://leaf.rivolink.mg/install.sh | sh
+"""
+]
+
 post_actions += [  # video2gif
     """#!/bin/bash
     # Download command line scripts
